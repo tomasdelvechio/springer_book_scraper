@@ -12,6 +12,7 @@ BASE_DIR = '.'
 
 def download_pdfs_from_url(book_url, book_title, book_topic):
     try:
+        print(f"Downloading {book_title}...                               ", end='\r', file=sys.stderr)
         r = requests.get(book_url)
         url_base = r.url
         codigo_libro = url_base.split('/')[-1]
@@ -19,7 +20,7 @@ def download_pdfs_from_url(book_url, book_title, book_topic):
         pdf_file = requests.get(url_pdf)
         pdf_file_name = '{base_dir}/{book_topic}/{book_title}.pdf'.format(book_topic=book_topic, book_title=book_title, base_dir=BASE_DIR)
         open(pdf_file_name, 'wb').write(pdf_file.content)
-    except:
+    except requests.exceptions.HTTPError:
         print("Error downloading: {book_topic} - {book_title}".format(book_topic=book_topic, book_title=book_title))
 
 args_parser = argparse.ArgumentParser(description='Download all links from the Google Spreadsheet URL')
