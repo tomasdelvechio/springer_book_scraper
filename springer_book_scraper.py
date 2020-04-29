@@ -43,12 +43,12 @@ def download_pdfs_from_url(book_url, book_title, book_topic):
 			sys.stdout.write('\r\033[K') #clear line
 	except (KeyboardInterrupt, requests.exceptions.HTTPError) as e:
 		if isinstance(e, requests.exceptions.HTTPError):
-			print('Error downloading: {book_topic} - {book_title}'.format(book_topic=book_topic, book_title=book_title))
+			print('\nError downloading: {book_topic} - {book_title}'.format(book_topic=book_topic, book_title=book_title))
 		elif isinstance(e, KeyboardInterrupt):
 			print('\nScript aborted')
 			sys.exit(0)
-
-
+      
+      
 args_parser = argparse.ArgumentParser(description='Download all links from the Google Spreadsheet URL')
 args_parser.add_argument('--topics', nargs='+', help="List of topics to download")
 args_parser.add_argument('--list-topics', action='store_true', help="Show all available topics")
