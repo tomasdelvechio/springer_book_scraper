@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+
 import os
+import sys
+import argparse
+from io import StringIO
+
 import requests
 import pandas as pd
-from io import StringIO
-import argparse
-import sys
 
 SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1HzdumNltTj2SHmCv3SRdoub8SvpIEn75fa4Q23x0keU/gviz/tq?tqx=out:csv'
 URL_PDF = 'https://link.springer.com/content/pdf/{codigo_libro}.pdf'
@@ -11,6 +14,7 @@ BASE_DIR = '.'
 
 
 def download_pdfs_from_url(book_url, book_title, book_topic):
+	book_title = book_title.replace("/", "_")
 	pdf_file_name = '{base_dir}/{book_topic}/{book_title}.pdf'.format(book_topic=book_topic, book_title=book_title, base_dir=BASE_DIR)
 	bytes_downloaded = 0
 	file_mode = "wb"
@@ -29,10 +33,10 @@ def download_pdfs_from_url(book_url, book_title, book_topic):
 		total_length = response.headers.get('content-length') or 0
 		total_length = int(total_length)
 		if total_length == 0:
-			print('Skipping {}'.format(pdf_file_name))
+			print('Skipping: {book_topic} - {book_title}'.format(book_topic=book_topic, book_title=book_title))
 			return
 		total_length = bytes_downloaded + total_length
-		print('Downloading {}'.format(pdf_file_name))
+		print('Downloading: {book_topic} - {book_title}'.format(book_topic=book_topic, book_title=book_title))
 		with open(pdf_file_name, file_mode) as f:
 			for data in response.iter_content(chunk_size=65536):
 				bytes_downloaded += len(data)
@@ -41,14 +45,13 @@ def download_pdfs_from_url(book_url, book_title, book_topic):
 				sys.stdout.write('\r[%s%s] %d%%' % ('=' * done, ' ' * (50-done), done*2) )    
 				sys.stdout.flush()
 			sys.stdout.write('\r\033[K') #clear line
-	except (KeyboardInterrupt, requests.exceptions.HTTPError) as e:
-		if isinstance(e, requests.exceptions.HTTPError):
-			print('\nError downloading: {book_topic} - {book_title}'.format(book_topic=book_topic, book_title=book_title))
-		elif isinstance(e, KeyboardInterrupt):
-			print('\nScript aborted')
-			sys.exit(0)
-      
-      
+	except requests.exceptions.HTTPError:
+		print('\nError downloading: {book_topic} - {book_title}'.format(book_topic=book_topic, book_title=book_title))
+	except KeyboardInterrupt:
+		print('\nScript aborted')
+		sys.exit(0)
+
+
 args_parser = argparse.ArgumentParser(description='Download all links from the Google Spreadsheet URL')
 args_parser.add_argument('--topics', nargs='+', help="List of topics to download")
 args_parser.add_argument('--list-topics', action='store_true', help="Show all available topics")
